@@ -292,12 +292,7 @@ export class ExecuteViewSubmitHandler {
 		const assoc = new RocketChatAssociationRecord(RocketChatAssociationModel.MISC, uuid);
 		await this.persistence.createWithAssociation(pollData, assoc);
 
-		const { optionButtons, cancelButton, refreshButton } = createPollButtons(options, uuid, isPublic);
-
-		const buttonElements = [...optionButtons, cancelButton];
-		if (refreshButton) {
-			buttonElements.push(refreshButton);
-		}
+		const { optionButtons, cancelButton } = createPollButtons(options, uuid, isPublic);
 
 		const builder = this.modify
 			.getCreator()
@@ -314,7 +309,7 @@ export class ExecuteViewSubmitHandler {
 				},
 				{
 					type: 'actions',
-					elements: buttonElements,
+					elements: [...optionButtons, cancelButton],
 				},
 			]);
 

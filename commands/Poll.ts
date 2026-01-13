@@ -65,6 +65,7 @@ export class QuickPoll implements ISlashCommand {
 			pollQuestion = remainingText;
 			options = ['Yes', 'No'];
 		}
+
 		if (!pollQuestion || pollQuestion.trim().length === 0) {
 			await sendNotification(read, modify, author, room, t('poll_empty_question'));
 			return;
@@ -132,12 +133,7 @@ export class QuickPoll implements ISlashCommand {
 		const assoc = new RocketChatAssociationRecord(RocketChatAssociationModel.MISC, uuid);
 		await persis.createWithAssociation(pollData, assoc);
 
-		const { optionButtons, cancelButton, refreshButton } = createPollButtons(options, uuid, isPublic);
-
-		const buttonElements = [...optionButtons, cancelButton];
-		if (refreshButton) {
-			buttonElements.push(refreshButton);
-		}
+		const { optionButtons, cancelButton } = createPollButtons(options, uuid, isPublic);
 
 		const builder = modify
 			.getCreator()
@@ -154,7 +150,7 @@ export class QuickPoll implements ISlashCommand {
 				},
 				{
 					type: 'actions',
-					elements: buttonElements,
+					elements: [...optionButtons, cancelButton],
 				},
 			]);
 

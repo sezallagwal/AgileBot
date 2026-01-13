@@ -20,7 +20,5 @@ export enum Poll {
 	PollNo = 'quickpoll_no',
 	PollVote = 'quickpoll_vote',
 	PollCancel = 'quickpoll_cancel',
-	PollRefresh = 'quickpoll_refresh',
 	ProcessorId = 'quick_poll',
 }
-

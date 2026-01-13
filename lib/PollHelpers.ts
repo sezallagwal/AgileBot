@@ -31,20 +31,20 @@ export function createPollButtons(options: string[], uuid: string, isPublic: boo
         style: 'danger' as const,
     };
 
-    const refreshButton = isPublic ? {
-        type: 'button' as const,
-        appId: APP_ID,
-        blockId: 'refresh-button-block-id',
-        actionId: Poll.PollRefresh,
-        value: uuid,
-        text: {
-            type: 'plain_text' as const,
-            text: t('refresh_results'),
-            emoji: true,
-        },
-    } : null;
+    return { optionButtons, cancelButton };
+}
 
-    return { optionButtons, cancelButton, refreshButton };
+const BAR_LENGTH = 20;
+const CHAR_FILLED = '█';
+const CHAR_EMPTY = ' ';
+
+function generateProgressBar(count: number, total: number): string {
+    const percentage = total === 0 ? 0 : Math.round((count / total) * 100);
+    const filledLength = Math.round((percentage / 100) * BAR_LENGTH);
+    const emptyLength = BAR_LENGTH - filledLength;
+
+    const bar = CHAR_FILLED.repeat(filledLength) + CHAR_EMPTY.repeat(emptyLength);
+    return `\`${bar}\` ${percentage}% (${count})`;
 }
 
 export function buildVoteDisplay(
@@ -56,12 +56,16 @@ export function buildVoteDisplay(
 
     const sanitize = (text: string) => text.replace(/[*_`~]/g, '');
 
-    if (options.length === 2) {
-        const opt1 = sanitize(options[0]);
-        const opt2 = sanitize(options[1]);
-        return `**Votes:** ${opt1}: ${responses[options[0]]?.length || 0} | ${opt2}: ${responses[options[1]]?.length || 0}`;
-    } else {
-        const lines = options.map((opt) => `• ${sanitize(opt)}: ${responses[opt]?.length || 0}`);
-        return `**Votes:**\n${lines.join('\n')}`;
+    let totalVotes = 0;
+    for (const opt of options) {
+        totalVotes += (responses[opt] || []).length;
     }
+
+    const lines = options.map((opt) => {
+        const count = (responses[opt] || []).length;
+        const progressBar = generateProgressBar(count, totalVotes);
+        return `**${sanitize(opt)}**: ${progressBar}`;
+    });
+
+    return `\n${lines.join('\n')}\n\nTotal votes: ${totalVotes}`;
 }

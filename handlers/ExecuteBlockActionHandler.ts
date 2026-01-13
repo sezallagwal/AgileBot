@@ -41,9 +41,6 @@ export class ExecuteBlockActionHandler {
 			case Poll.PollCancel:
 				await this.handlePollCancel(user, room, value);
 				break;
-			case Poll.PollRefresh:
-				await this.handlePollRefresh(user, room, value);
-				break;
 		}
 
 		return {
@@ -109,6 +106,10 @@ export class ExecuteBlockActionHandler {
 
 		await saveVote(this.persistence, uuid, userId, userName, option);
 
+		if (pollData.isPublic && pollData.messageId) {
+			await this.updatePollMessageWithLiveResults(pollData);
+		}
+
 		return 'success';
 	}
 
@@ -129,16 +130,7 @@ export class ExecuteBlockActionHandler {
 
 		const voteDisplay = buildVoteDisplay(pollData.options, responses, true);
 
-		const { optionButtons, cancelButton, refreshButton } = createPollButtons(
-			pollData.options,
-			pollData.uuid,
-			pollData.isPublic || false
-		);
-
-		const buttonElements = [...optionButtons, cancelButton];
-		if (refreshButton) {
-			buttonElements.push(refreshButton);
-		}
+		const { optionButtons, cancelButton } = createPollButtons(pollData.options, pollData.uuid, pollData.isPublic);
 
 		const messageBuilder = await this.modify.getUpdater().message(pollData.messageId, sender);
 		messageBuilder.setBlocks([
@@ -151,26 +143,10 @@ export class ExecuteBlockActionHandler {
 			},
 			{
 				type: 'actions',
-				elements: buttonElements,
+				elements: [...optionButtons, cancelButton],
 			},
 		]);
 		await this.modify.getUpdater().finish(messageBuilder);
-	}
-
-	private async handlePollRefresh(user: IUser, room: IRoom, uuid: string): Promise<void> {
-		const assoc = new RocketChatAssociationRecord(RocketChatAssociationModel.MISC, uuid);
-		const [pollData] = (await this.read.getPersistenceReader().readByAssociation(assoc)) as IPollData[];
-
-		if (!pollData) {
-			await sendNotification(this.read, this.modify, user, room, t('poll_already_ended'));
-			return;
-		}
-
-		if (!pollData.isPublic) {
-			return;
-		}
-
-		await this.updatePollMessageWithLiveResults(pollData);
 	}
 
 	private async handlePollCancel(user: IUser, room: IRoom, uuid: string) {

@@ -53,5 +53,4 @@ export const en = {
 	poll_modal_lock_label: 'Lock votes after casting?',
 	poll_modal_public_label: 'Show live results?',
 	poll_created_successfully: 'Poll created successfully!',
-	refresh_results: '🔄 Refresh Results',
 };
