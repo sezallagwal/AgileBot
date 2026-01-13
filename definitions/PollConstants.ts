@@ -1,0 +1,7 @@
+export const POLL_CONSTANTS = {
+    MAX_OPTIONS: 10,
+    MAX_OPTION_LENGTH: 50,
+    MIN_OPTIONS: 2,
+    MAX_TIME_MINUTES: 7 * 24 * 60,
+    ESCAPE_PLACEHOLDER: '\u0000PIPE\u0000',
+} as const;
